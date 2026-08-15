@@ -10,7 +10,7 @@ import {
   type TextChannel,
 } from "discord.js";
 import { type BotCommand } from "../index";
-import { v2EphemeralReply, errorContainer, successContainer } from "../v2/index";
+import { v2EphemeralReply, errorContainer, successContainer, infoContainer } from "../v2/index";
 import { logger } from "../../lib/logger";
 
 // Active automessage tasks: commandId → { accountToken, channelId, message, minMs, maxMs, interval, running }
@@ -49,8 +49,7 @@ export const automessageCommand: BotCommand = {
       sub
         .setName("status")
         .setDescription("Shows the current auto-message status")
-    )
-    .setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
+    ),
 
   async execute(interaction: ChatInputCommandInteraction) {
     const sub = interaction.options.getSubcommand();
@@ -104,6 +103,16 @@ export const automessageCommand: BotCommand = {
         new ActionRowBuilder<TextInputBuilder>().addComponents(messageInput),
         new ActionRowBuilder<TextInputBuilder>().addComponents(minTimeInput),
         new ActionRowBuilder<TextInputBuilder>().addComponents(maxTimeInput)
+      );
+
+      // Show ToS warning before the modal
+      await interaction.reply(
+        v2EphemeralReply([
+          infoContainer({
+            title: "⚠️ Terms of Service Warning",
+            description: "This tool may violate Discord's Terms of Service. Using self-bot tokens or automating user accounts can result in account termination or banishment.\n\nBy proceeding, you confirm you understand the risks and accept full responsibility.",
+          }),
+        ])
       );
 
       await interaction.showModal(modal);
@@ -215,6 +224,8 @@ export async function handleAutomessageModal(interaction: ModalSubmitInteraction
           `**Message:** ${message.slice(0, 50)}${message.length > 50 ? "..." : ""}`,
           "",
           "The bot will send messages with human-like timing. Use `/automessage stop` to stop.",
+          "",
+          "⚠️ Reminder: This tool may violate Discord's Terms of Service and could result in account banishment. Use at your own risk.",
         ].join("\n")
       ),
     ])
