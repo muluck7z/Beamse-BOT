@@ -37,7 +37,7 @@ export const kickCommand: BotCommand = {
       return;
     }
 
-    if (isUserAboveBot(member, guild)) {
+    if (await isUserAboveBot(member, guild)) {
       await interaction.reply(
         v2EphemeralReply([errorContainer("This user has a role above the bot and cannot be punished.")])
       );

@@ -25,11 +25,11 @@ export interface BotCommand {
 }
 
 const client = new Client({
+  // Privileged intents (GuildMembers, MessageContent) are intentionally disabled —
+  // they are not enabled in the Discord Developer Portal for this bot.
   intents: [
     GatewayIntentBits.Guilds,
     GatewayIntentBits.GuildMessages,
-    GatewayIntentBits.GuildMembers,
-    GatewayIntentBits.MessageContent,
     GatewayIntentBits.GuildModeration,
   ],
   partials: [Partials.Message, Partials.Channel, Partials.GuildMember],
@@ -69,7 +69,9 @@ export async function startBot() {
 
     for (const [, guild] of c.guilds.cache) {
       try {
-        const me = guild.members.me;
+        // Fetch the bot member via REST — the GuildMembers intent is disabled,
+        // so guild.members.me may be missing from the cache.
+        const me = guild.members.me ?? (await guild.members.fetch(c.user.id).catch(() => null));
         if (!me) continue;
 
         const channel = guild.channels.cache.find(
@@ -97,7 +99,14 @@ export async function startBot() {
     // Interactions outside a guild (DM) are not allowed
     if (!interaction.inGuild()) return;
 
-    const member = interaction.member as GuildMember | null;
+    const guild = interaction.guild;
+
+    // The GuildMembers intent is disabled, so interaction.member may be
+    // missing — fall back to a REST fetch to check staff permissions.
+    let member = interaction.member as GuildMember | null;
+    if (!member && guild) {
+      member = await guild.members.fetch(interaction.user.id).catch(() => null);
+    }
 
     // Ticket interactions are public — any member can open/interact with their ticket
     const isTicketInteraction =
