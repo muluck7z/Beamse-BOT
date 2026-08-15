@@ -18,6 +18,7 @@ import { handleSelectMenu } from "./handlers/selectMenu";
 import { errorContainer } from "./v2/index";
 import { checkAutoMod } from "./autoMod";
 import { TICKET_STAFF_ROLE_ID } from "./ticketStore";
+import { handleAutomessageModal } from "./commands/automessage";
 
 export interface BotCommand {
   data: { name: string; toJSON(): object };
@@ -64,6 +65,9 @@ export async function startBot() {
   }
 
   await loadCommands(commands);
+
+  // Store client globally so automessage can send DM logs
+  (globalThis as any).__beamseBotClient = client;
 
   client.once("ready", (c) => {
     logger.info({ tag: c.user.tag, guilds: c.guilds.cache.size }, "Bot is online and ready");
@@ -147,6 +151,11 @@ export async function startBot() {
       await handleButton(interaction as ButtonInteraction);
     } else if (interaction.isStringSelectMenu()) {
       await handleSelectMenu(interaction as StringSelectMenuInteraction);
+    } else if (interaction.isModalSubmit()) {
+      const modalCustomId = interaction.customId;
+      if (modalCustomId === "automessage:config") {
+        await handleAutomessageModal(interaction as ModalSubmitInteraction);
+      }
     }
   });
 

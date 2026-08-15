@@ -12,6 +12,7 @@ import { clearCommand } from "./commands/clear";
 import { warnCommand } from "./commands/warn";
 import { giveawayCommand } from "./commands/sorteio";
 import { addemojiCommand } from "./commands/addemoji";
+import { automessageCommand } from "./commands/automessage";
 import { deployCommandsMerged, fetchRegisteredCommands } from "./deploy";
 import { logger } from "../lib/logger";
 
@@ -28,6 +29,7 @@ const allCommands: BotCommand[] = [
   warnCommand,
   giveawayCommand,
   addemojiCommand,
+  automessageCommand,
 ];
 
 /** Names of the commands that belong to Beamse-BOT. */
