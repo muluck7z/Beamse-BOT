@@ -16,6 +16,7 @@ import { loadCommands } from "./loader";
 import { handleButton } from "./handlers/button";
 import { handleSelectMenu } from "./handlers/selectMenu";
 import { errorContainer } from "./v2/index";
+import { checkAutoMod } from "./autoMod";
 
 export interface BotCommand {
   data: { name: string; toJSON(): object };
@@ -122,6 +123,15 @@ export async function startBot() {
       await handleButton(interaction as ButtonInteraction);
     } else if (interaction.isStringSelectMenu()) {
       await handleSelectMenu(interaction as StringSelectMenuInteraction);
+    }
+  });
+
+  // Auto-mod: anti-invite + blocked words
+  client.on("messageCreate", async (message) => {
+    try {
+      await checkAutoMod(message);
+    } catch (err) {
+      logger.error({ err }, "AutoMod error");
     }
   });
 
