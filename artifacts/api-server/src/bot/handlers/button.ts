@@ -23,9 +23,9 @@ import { ticketStore } from "../ticketStore";
 
 const TICKET_EMOJI = "<:ticket:1508274275730063360>";
 
-// Channel IDs — set these to the channels in YOUR server (leave as is if they exist)
-const RATING_CHANNEL_ID = "1512670969653887137";
-const LOG_CHANNEL_ID = "1512670984572764303";
+// Channel where ticket ratings and close logs are sent (Beamse server)
+const RATING_CHANNEL_ID = "1537975632653197403";
+const LOG_CHANNEL_ID = "1537975632653197403";
 
 // Role IDs with access to tickets — change to your staff/support role IDs
 const TICKET_STAFF_ROLES = ["1497801117940056125", "1457907642633818204"];
