@@ -17,6 +17,7 @@ import { handleButton } from "./handlers/button";
 import { handleSelectMenu } from "./handlers/selectMenu";
 import { errorContainer } from "./v2/index";
 import { checkAutoMod } from "./autoMod";
+import { TICKET_STAFF_ROLE_ID } from "./ticketStore";
 
 export interface BotCommand {
   data: { name: string; toJSON(): object };
@@ -81,12 +82,26 @@ export async function startBot() {
       member = await guild.members.fetch(interaction.user.id).catch(() => null);
     }
 
-    // Ticket interactions are public — any member can open/interact with their ticket
+    // Opening a ticket (select menu "ticket:type") is public — any member can open one
     // Giveaway entry button is also public — anyone can join a giveaway
-    const isTicketInteraction =
-      (interaction.isStringSelectMenu() || interaction.isButton()) &&
-      "customId" in interaction &&
-      (interaction.customId.startsWith("ticket:") || interaction.customId.startsWith("sorteio:entrar:"));
+    // But rating and claim buttons require the ticket staff role
+    const isTicketOpenInteraction =
+      interaction.isStringSelectMenu() && "customId" in interaction && interaction.customId.startsWith("ticket:type");
+    const isTicketRestrictedInteraction =
+      interaction.isButton() && "customId" in interaction &&
+      (interaction.customId.startsWith("ticket:claim") || interaction.customId.startsWith("ticket:rate"));
+    const isGiveawayInteraction =
+      interaction.isButton() && "customId" in interaction && interaction.customId.startsWith("sorteio:entrar:");
+
+    // Check if user has the ticket staff role (for claim/rate)
+    const isTicketStaff = member && member.roles.cache.has(TICKET_STAFF_ROLE_ID);
+
+    if (isTicketRestrictedInteraction && !isTicketStaff) {
+      await replyAccessDenied(interaction as ButtonInteraction);
+      return;
+    }
+
+    const isPublicInteraction = isTicketOpenInteraction || isGiveawayInteraction;
 
     // Everything else requires staff permissions
     const isStaff =
@@ -95,7 +110,7 @@ export async function startBot() {
         member.permissions.has(PermissionFlagsBits.ManageMessages) ||
         member.permissions.has(PermissionFlagsBits.ModerateMembers));
 
-    if (!isTicketInteraction && !isStaff) {
+    if (!isPublicInteraction && !isStaff) {
       await replyAccessDenied(
         interaction as ChatInputCommandInteraction | ButtonInteraction | ModalSubmitInteraction | StringSelectMenuInteraction
       );

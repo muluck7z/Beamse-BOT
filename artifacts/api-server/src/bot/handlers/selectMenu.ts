@@ -15,7 +15,7 @@ import {
   v2EphemeralReply,
 } from "../v2/index";
 import { logger } from "../../lib/logger";
-import { ticketStore, ticketPanelConfig } from "../ticketStore";
+import { ticketStore, ticketPanelConfig, TICKET_STAFF_ROLE_ID } from "../ticketStore";
 
 const TICKET_EMOJI = "<:ticket:1508274275730063360>";
 
@@ -96,7 +96,7 @@ async function handleTicketTypeSelect(interaction: StringSelectMenuInteraction) 
     type: ChannelType.GuildText,
     parent: category.id,
     topic: interaction.user.id,
-    permissionOverwrites: [
+      permissionOverwrites: [
       { id: guild.roles.everyone.id, deny: [PermissionFlagsBits.ViewChannel] },
       {
         id: botId,
@@ -111,6 +111,15 @@ async function handleTicketTypeSelect(interaction: StringSelectMenuInteraction) 
       },
       {
         id: interaction.user.id,
+        allow: [
+          PermissionFlagsBits.ViewChannel,
+          PermissionFlagsBits.SendMessages,
+          PermissionFlagsBits.ReadMessageHistory,
+          PermissionFlagsBits.AttachFiles,
+        ],
+      },
+      {
+        id: TICKET_STAFF_ROLE_ID,
         allow: [
           PermissionFlagsBits.ViewChannel,
           PermissionFlagsBits.SendMessages,
@@ -139,8 +148,8 @@ async function handleTicketTypeSelect(interaction: StringSelectMenuInteraction) 
 
   // Mention sent separately — text content cannot be mixed with IS_COMPONENTS_V2
   await (channel as TextChannel).send({
-    content: `${interaction.user} | @everyone`,
-    allowedMentions: { users: [interaction.user.id], roles: [guild.roles.everyone.id] },
+    content: `${interaction.user} | <@&${TICKET_STAFF_ROLE_ID}>`,
+    allowedMentions: { users: [interaction.user.id], roles: [TICKET_STAFF_ROLE_ID] },
   });
 
   await (channel as TextChannel).send({
