@@ -11,7 +11,7 @@ import { kickCommand } from "./commands/kick";
 import { clearCommand } from "./commands/clear";
 import { warnCommand } from "./commands/warn";
 import { giveawayCommand } from "./commands/sorteio";
-import { stealEmojisCommand } from "./commands/stealEmojis";
+import { addemojiCommand } from "./commands/addemoji";
 import { deployCommandsMerged, fetchRegisteredCommands } from "./deploy";
 import { logger } from "../lib/logger";
 
@@ -27,7 +27,7 @@ const allCommands: BotCommand[] = [
   clearCommand,
   warnCommand,
   giveawayCommand,
-  stealEmojisCommand,
+  addemojiCommand,
 ];
 
 /** Names of the commands that belong to Beamse-BOT. */
