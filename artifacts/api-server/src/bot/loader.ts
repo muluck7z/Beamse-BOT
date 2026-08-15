@@ -10,6 +10,7 @@ import { unlockCommand } from "./commands/unlock";
 import { kickCommand } from "./commands/kick";
 import { clearCommand } from "./commands/clear";
 import { warnCommand } from "./commands/warn";
+import { giveawayCommand } from "./commands/sorteio";
 import { deployCommandsMerged, fetchRegisteredCommands } from "./deploy";
 import { logger } from "../lib/logger";
 
@@ -24,6 +25,7 @@ const allCommands: BotCommand[] = [
   kickCommand,
   clearCommand,
   warnCommand,
+  giveawayCommand,
 ];
 
 /** Names of the commands that belong to Beamse-BOT. */

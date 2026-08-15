@@ -81,10 +81,11 @@ export async function startBot() {
     }
 
     // Ticket interactions are public — any member can open/interact with their ticket
+    // Giveaway entry button is also public — anyone can join a giveaway
     const isTicketInteraction =
       (interaction.isStringSelectMenu() || interaction.isButton()) &&
       "customId" in interaction &&
-      interaction.customId.startsWith("ticket:");
+      (interaction.customId.startsWith("ticket:") || interaction.customId.startsWith("sorteio:entrar:"));
 
     // Everything else requires staff permissions
     const isStaff =

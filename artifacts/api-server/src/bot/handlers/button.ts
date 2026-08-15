@@ -4,6 +4,7 @@ import {
   ButtonBuilder,
   ButtonStyle,
   MessageFlags,
+  Routes,
 } from "discord.js";
 import {
   infoContainer,
@@ -17,6 +18,8 @@ import {
 } from "../v2/index";
 import { logger } from "../../lib/logger";
 import { ticketStore } from "../ticketStore";
+import { giveawayByChannel, giveawayStore } from "../giveawayStore";
+import { buildGiveawayComponents } from "../commands/sorteio";
 
 const TICKET_EMOJI = "<:ticket:1508274275730063360>";
 
@@ -51,6 +54,8 @@ export async function handleButton(interaction: ButtonInteraction) {
   try {
     if (ns === "ticket") {
       await handleTicketButton(interaction, action!, parts);
+    } else if (ns === "sorteio" && action === "entrar") {
+      await handleGiveawayJoin(interaction, parts);
     } else {
       logger.warn({ customId: interaction.customId }, "Unknown button interaction");
     }
@@ -287,4 +292,52 @@ async function handleTicketButton(
 
     logger.info({ userId: targetUserId, claimerId, stars, channel: channel.name }, "Ticket rated");
   }
+}
+
+// ─── Giveaway join button ─────────────────────────────────────────────────────
+
+async function handleGiveawayJoin(interaction: ButtonInteraction, parts: string[]) {
+  // customId: sorteio:entrar:channelId
+  const channelId = parts[2];
+  if (!channelId) {
+    await interaction.reply(v2EphemeralReply([errorContainer("Giveaway not found.")]));
+    return;
+  }
+
+  const messageId = giveawayByChannel.get(channelId);
+  if (!messageId) {
+    await interaction.reply(v2EphemeralReply([errorContainer("No active giveaway in this channel.")]));
+    return;
+  }
+
+  const entry = giveawayStore.get(messageId);
+  if (!entry || entry.ended) {
+    await interaction.reply(v2EphemeralReply([errorContainer("This giveaway has already ended.")]));
+    return;
+  }
+
+  if (entry.participants.has(interaction.user.id)) {
+    await interaction.reply(v2EphemeralReply([errorContainer("You have already entered this giveaway!")]));
+    return;
+  }
+
+  entry.participants.add(interaction.user.id);
+
+  // Update the giveaway message with the new participant count
+  const { container, actionRow } = buildGiveawayComponents(entry);
+  const channel = interaction.channel as TextChannel;
+  await channel.client.rest
+    .patch(Routes.channelMessage(channelId, messageId), {
+      body: {
+        components: [container.toJSON(), actionRow.toJSON()],
+        flags: MessageFlags.IsComponentsV2,
+      },
+    })
+    .catch((err) => logger.error({ err }, "Failed to update giveaway message on join"));
+
+  await interaction.reply(
+    v2EphemeralReply([successContainer("You're in!", `You have entered the giveaway for **${entry.prize}**. Good luck! 🍀`)])
+  );
+
+  logger.info({ userId: interaction.user.id, prize: entry.prize, participants: entry.participants.size }, "User joined giveaway");
 }
