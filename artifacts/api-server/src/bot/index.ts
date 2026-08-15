@@ -25,11 +25,12 @@ export interface BotCommand {
 }
 
 const client = new Client({
-  // Privileged intents (GuildMembers, MessageContent) are intentionally disabled —
-  // they are not enabled in the Discord Developer Portal for this bot.
+  // Privileged intents enabled in the Discord Developer Portal by the owner.
   intents: [
     GatewayIntentBits.Guilds,
     GatewayIntentBits.GuildMessages,
+    GatewayIntentBits.GuildMembers,
+    GatewayIntentBits.MessageContent,
     GatewayIntentBits.GuildModeration,
   ],
   partials: [Partials.Message, Partials.Channel, Partials.GuildMember],
