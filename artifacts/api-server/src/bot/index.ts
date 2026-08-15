@@ -3,9 +3,7 @@ import {
   GatewayIntentBits,
   Partials,
   Collection,
-  ChannelType,
   PermissionFlagsBits,
-  type TextChannel,
   type ChatInputCommandInteraction,
   type ButtonInteraction,
   type ModalSubmitInteraction,
@@ -65,35 +63,8 @@ export async function startBot() {
 
   await loadCommands(commands);
 
-  client.once("ready", async (c) => {
-    logger.info({ tag: c.user.tag }, "Bot is ready");
-
-    for (const [, guild] of c.guilds.cache) {
-      try {
-        // Fetch the bot member via REST — the GuildMembers intent is disabled,
-        // so guild.members.me may be missing from the cache.
-        const me = guild.members.me ?? (await guild.members.fetch(c.user.id).catch(() => null));
-        if (!me) continue;
-
-        const channel = guild.channels.cache.find(
-          (ch): ch is TextChannel =>
-            ch.type === ChannelType.GuildText &&
-            ch
-              .permissionsFor(me)
-              ?.has([PermissionFlagsBits.SendMessages, PermissionFlagsBits.MentionEveryone]) === true
-        );
-
-        if (!channel) {
-          logger.warn({ guild: guild.name }, "No channel available to send the online message");
-          continue;
-        }
-
-        await channel.send("🔄 Bot online! @everyone");
-        logger.info({ guild: guild.name, channel: channel.name }, "Online message sent");
-      } catch (err) {
-        logger.error({ err, guild: guild.name }, "Failed to send online message");
-      }
-    }
+  client.once("ready", (c) => {
+    logger.info({ tag: c.user.tag, guilds: c.guilds.cache.size }, "Bot is online and ready");
   });
 
   client.on("interactionCreate", async (interaction) => {
