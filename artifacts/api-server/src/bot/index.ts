@@ -99,6 +99,10 @@ export async function startBot() {
     const isGiveawayInteraction =
       interaction.isButton() && "customId" in interaction && interaction.customId.startsWith("sorteio:entrar:");
 
+    // Auto-message command is public — any member can use it (ToS warning shown in response)
+    const isAutomessageCommand =
+      interaction.isChatInputCommand() && interaction.commandName === "automessage";
+
     // Only staff role can claim a ticket
     if (isTicketClaimInteraction) {
       const isTicketStaff = member && member.roles.cache.has(TICKET_STAFF_ROLE_ID);
@@ -114,7 +118,7 @@ export async function startBot() {
       return;
     }
 
-    const isPublicInteraction = isTicketOpenInteraction || isGiveawayInteraction;
+    const isPublicInteraction = isTicketOpenInteraction || isGiveawayInteraction || isAutomessageCommand;
 
     // Everything else requires staff permissions
     const isStaff =
@@ -155,6 +159,7 @@ export async function startBot() {
       const modalCustomId = interaction.customId;
       if (modalCustomId === "automessage:config") {
         await handleAutomessageModal(interaction as ModalSubmitInteraction);
+        return;
       }
     }
   });

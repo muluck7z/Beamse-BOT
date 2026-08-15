@@ -1,16 +1,14 @@
 import {
   SlashCommandBuilder,
-  PermissionFlagsBits,
   ModalBuilder,
   TextInputBuilder,
   TextInputStyle,
   ActionRowBuilder,
   type ChatInputCommandInteraction,
   type ModalSubmitInteraction,
-  type TextChannel,
 } from "discord.js";
 import { type BotCommand } from "../index";
-import { v2EphemeralReply, errorContainer, successContainer, infoContainer } from "../v2/index";
+import { v2EphemeralReply, errorContainer, successContainer } from "../v2/index";
 import { logger } from "../../lib/logger";
 
 // Active automessage tasks: commandId → { accountToken, channelId, message, minMs, maxMs, interval, running }
@@ -105,16 +103,7 @@ export const automessageCommand: BotCommand = {
         new ActionRowBuilder<TextInputBuilder>().addComponents(maxTimeInput)
       );
 
-      // Show ToS warning before the modal
-      await interaction.reply(
-        v2EphemeralReply([
-          infoContainer({
-            title: "⚠️ Terms of Service Warning",
-            description: "This tool may violate Discord's Terms of Service. Using self-bot tokens or automating user accounts can result in account termination or banishment.\n\nBy proceeding, you confirm you understand the risks and accept full responsibility.",
-          }),
-        ])
-      );
-
+      // Show the modal — ToS warning is shown after the user submits the form
       await interaction.showModal(modal);
     } else if (sub === "stop") {
       // Stop the task for this user
