@@ -47,21 +47,5 @@ export const unbanCommand: BotCommand = {
       ])
     );
 
-    // Log to the punishment log channel
-    const punishLog = interaction.client.channels.cache.get("1526621003281862768") as TextChannel | undefined;
-    if (punishLog) {
-      await punishLog.send({
-        ...v2Reply([
-          modContainer({
-            action: `${EMOJIS.mod} User Unbanned`,
-            targetTag: ban.user.tag,
-            targetId: ban.user.id,
-            moderatorTag: interaction.user.tag,
-            reason: motivo,
-            avatarUrl: ban.user.displayAvatarURL({ size: 256 }),
-          }),
-        ]),
-      }).catch(() => null);
-    }
   },
 };

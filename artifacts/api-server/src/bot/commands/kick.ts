@@ -1,12 +1,11 @@
 import {
   SlashCommandBuilder,
   PermissionFlagsBits,
-  TextChannel,
   type ChatInputCommandInteraction,
 } from "discord.js";
 import { type BotCommand } from "../index";
 import { modContainer, errorContainer, v2Reply, v2EphemeralReply, COLORS, EMOJIS } from "../v2/index";
-import { IMMUNE_ROLE_ID } from "../config";
+import { isUserAboveBot } from "../guards";
 
 export const kickCommand: BotCommand = {
   data: new SlashCommandBuilder()
@@ -38,9 +37,9 @@ export const kickCommand: BotCommand = {
       return;
     }
 
-    if (member.roles.cache.has(IMMUNE_ROLE_ID)) {
+    if (isUserAboveBot(member, guild)) {
       await interaction.reply(
-        v2EphemeralReply([errorContainer("This user has an immune role and cannot be punished.")])
+        v2EphemeralReply([errorContainer("This user has a role above the bot and cannot be punished.")])
       );
       return;
     }
@@ -70,7 +69,7 @@ export const kickCommand: BotCommand = {
     await interaction.reply(
       v2Reply([
         modContainer({
-          action: `${EMOJIS.mod} Usuário Expulso`,
+          action: `${EMOJIS.mod} User Kicked`,
           targetTag: user.tag,
           targetId: user.id,
           moderatorTag: interaction.user.tag,
@@ -80,20 +79,5 @@ export const kickCommand: BotCommand = {
       ])
     );
 
-    const punishLog = interaction.client.channels.cache.get("1526621003281862768") as TextChannel | undefined;
-    if (punishLog) {
-      await punishLog.send({
-        ...v2Reply([
-          modContainer({
-            action: `${EMOJIS.mod} Usuário Expulso`,
-            targetTag: user.tag,
-            targetId: user.id,
-            moderatorTag: interaction.user.tag,
-            reason: motivo,
-            avatarUrl: user.displayAvatarURL({ size: 256 }),
-          })
-        ]),
-      }).catch(() => null);
-    }
   },
 };

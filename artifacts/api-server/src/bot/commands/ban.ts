@@ -1,7 +1,6 @@
 import {
   SlashCommandBuilder,
   PermissionFlagsBits,
-  TextChannel,
   type ChatInputCommandInteraction,
 } from "discord.js";
 import { type BotCommand } from "../index";
@@ -13,7 +12,7 @@ import {
   COLORS,
   EMOJIS,
 } from "../v2/index";
-import { IMMUNE_ROLE_ID } from "../config";
+import { isUserAboveBot } from "../guards";
 
 export const banCommand: BotCommand = {
   data: new SlashCommandBuilder()
@@ -50,9 +49,9 @@ export const banCommand: BotCommand = {
 
     const member = await guild.members.fetch(user.id).catch(() => null);
     if (member) {
-      if (member.roles.cache.has(IMMUNE_ROLE_ID)) {
+      if (isUserAboveBot(member, guild)) {
         await interaction.reply(
-          v2EphemeralReply([errorContainer("This user has an immune role and cannot be punished.")])
+          v2EphemeralReply([errorContainer("This user has a role above the bot and cannot be punished.")])
         );
         return;
       }
@@ -101,32 +100,16 @@ export const banCommand: BotCommand = {
     await interaction.reply(
       v2Reply([
         modContainer({
-          action: `${EMOJIS.mod} Usuário Banido`,
+          action: `${EMOJIS.mod} User Banned`,
           targetTag: user.tag,
           targetId: user.id,
           moderatorTag: interaction.user.tag,
           reason: motivo,
           avatarUrl: user.displayAvatarURL({ size: 256 }),
-          extra: dias > 0 ? `**Mensagens deletadas:** ${dias} dia(s)` : undefined,
+          extra: dias > 0 ? `**Deleted messages:** ${dias} day(s)` : undefined,
         }),
       ])
     );
 
-    const punishLog = interaction.client.channels.cache.get("1526621003281862768") as TextChannel | undefined;
-    if (punishLog) {
-      await punishLog.send({
-        ...v2Reply([
-          modContainer({
-            action: `${EMOJIS.mod} Usuário Banido`,
-            targetTag: user.tag,
-            targetId: user.id,
-            moderatorTag: interaction.user.tag,
-            reason: motivo,
-            avatarUrl: user.displayAvatarURL({ size: 256 }),
-            extra: dias > 0 ? `**Mensagens deletadas:** ${dias} dia(s)` : undefined,
-          })
-        ]),
-      }).catch(() => null);
-    }
   },
 };

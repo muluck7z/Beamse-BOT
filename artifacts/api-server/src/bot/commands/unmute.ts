@@ -42,7 +42,7 @@ export const unmuteCommand: BotCommand = {
     await interaction.reply(
       v2Reply([
         modContainer({
-          action: `${EMOJIS.mod} Usuário Dessilenciado`,
+          action: `${EMOJIS.mod} User Un-Timed Out`,
           targetTag: user.tag,
           targetId: user.id,
           moderatorTag: interaction.user.tag,
@@ -52,20 +52,5 @@ export const unmuteCommand: BotCommand = {
       ])
     );
 
-    const punishLog = interaction.client.channels.cache.get("1526621003281862768") as TextChannel | undefined;
-    if (punishLog) {
-      await punishLog.send({
-        ...v2Reply([
-          modContainer({
-            action: `${EMOJIS.mod} Usuário Dessilenciado`,
-            targetTag: user.tag,
-            targetId: user.id,
-            moderatorTag: interaction.user.tag,
-            reason: motivo,
-            avatarUrl: user.displayAvatarURL({ size: 256 }),
-          })
-        ]),
-      }).catch(() => null);
-    }
   },
 };

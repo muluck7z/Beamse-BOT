@@ -19,8 +19,7 @@ import { ticketStore, ticketPanelConfig } from "../ticketStore";
 
 const TICKET_EMOJI = "<:ticket:1508274275730063360>";
 
-// Support role ID that gets pinged and granted access in tickets — change to your own role ID
-const SUPPORT_ROLE_ID = "1497801117940056125";
+// @everyone is mentioned in the ticket (no specific staff role)
 
 const TICKET_TYPE_LABELS: Record<string, string> = {
   support: "General Support",
@@ -119,16 +118,6 @@ async function handleTicketTypeSelect(interaction: StringSelectMenuInteraction) 
           PermissionFlagsBits.AttachFiles,
         ],
       },
-      {
-        id: SUPPORT_ROLE_ID,
-        allow: [
-          PermissionFlagsBits.ViewChannel,
-          PermissionFlagsBits.SendMessages,
-          PermissionFlagsBits.ReadMessageHistory,
-          PermissionFlagsBits.AttachFiles,
-          PermissionFlagsBits.ManageMessages,
-        ],
-      },
     ],
   });
 
@@ -150,8 +139,8 @@ async function handleTicketTypeSelect(interaction: StringSelectMenuInteraction) 
 
   // Mention sent separately — text content cannot be mixed with IS_COMPONENTS_V2
   await (channel as TextChannel).send({
-    content: `${interaction.user} | <@&${SUPPORT_ROLE_ID}>`,
-    allowedMentions: { users: [interaction.user.id], roles: [SUPPORT_ROLE_ID] },
+    content: `${interaction.user} | @everyone`,
+    allowedMentions: { users: [interaction.user.id], roles: [guild.roles.everyone.id] },
   });
 
   await (channel as TextChannel).send({
