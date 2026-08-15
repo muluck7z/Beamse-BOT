@@ -1,0 +1,11 @@
+[phases.setup]
+nixPkgs = ["nodejs_20", "nodePackages.pnpm"]
+
+[phases.install]
+cmds = ["pnpm install --no-frozen-lockfile"]
+
+[phases.build]
+cmds = ["pnpm --filter @beamse/api-server run build"]
+
+[start]
+cmd = "node --enable-source-maps artifacts/api-server/dist/index.mjs"
