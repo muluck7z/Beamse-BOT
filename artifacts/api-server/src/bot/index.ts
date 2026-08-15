@@ -84,20 +84,29 @@ export async function startBot() {
 
     // Opening a ticket (select menu "ticket:type") is public — any member can open one
     // Giveaway entry button is also public — anyone can join a giveaway
-    // But rating and claim buttons require the ticket staff role
+    // Claim button requires the ticket staff role
+    // Rating button requires being the ticket opener (checked in handleButton)
     const isTicketOpenInteraction =
       interaction.isStringSelectMenu() && "customId" in interaction && interaction.customId.startsWith("ticket:type");
-    const isTicketRestrictedInteraction =
-      interaction.isButton() && "customId" in interaction &&
-      (interaction.customId.startsWith("ticket:claim") || interaction.customId.startsWith("ticket:rate"));
+    const isTicketClaimInteraction =
+      interaction.isButton() && "customId" in interaction && interaction.customId.startsWith("ticket:claim");
+    const isTicketRateInteraction =
+      interaction.isButton() && "customId" in interaction && interaction.customId.startsWith("ticket:rate");
     const isGiveawayInteraction =
       interaction.isButton() && "customId" in interaction && interaction.customId.startsWith("sorteio:entrar:");
 
-    // Check if user has the ticket staff role (for claim/rate)
-    const isTicketStaff = member && member.roles.cache.has(TICKET_STAFF_ROLE_ID);
+    // Only staff role can claim a ticket
+    if (isTicketClaimInteraction) {
+      const isTicketStaff = member && member.roles.cache.has(TICKET_STAFF_ROLE_ID);
+      if (!isTicketStaff) {
+        await replyAccessDenied(interaction as ButtonInteraction);
+        return;
+      }
+    }
 
-    if (isTicketRestrictedInteraction && !isTicketStaff) {
-      await replyAccessDenied(interaction as ButtonInteraction);
+    // Rating: pass to handler — handler checks if user is the opener
+    if (isTicketRateInteraction) {
+      await handleButton(interaction as ButtonInteraction);
       return;
     }
 
